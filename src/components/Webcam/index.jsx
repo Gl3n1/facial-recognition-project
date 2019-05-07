@@ -1,16 +1,16 @@
-import React, {useState, useEffect, Fragment} from "react";
-import * as faceapi from 'face-api.js';
+import React, { useState, useEffect, Fragment } from "react";
+import * as faceapi from "face-api.js";
 
 // import mtcnnModel from '../../weights/mtcnn_model-weights_manifest.json';
 // import faceModel from '../../weights/face_recognition_model-weights_manifest.json';
 
 const WebCam = function() {
   let styles = {
-    video: {
-      height: "50vh",
-      width: "100vw",
-      backgroundColor: "yellow"
-    }
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "40%",
+    height: "40%"
   };
 
   let videoDOM;
@@ -28,48 +28,67 @@ const WebCam = function() {
         })
         .catch(function(error) {
           console.log(`Something went wrong! ${error}`);
-          setVideo(false)
+          setVideo(false);
         });
     }
   };
 
- const detectFace = async () => {
+  const detectFace = async (video, canvas) => {
+    try {
+      await faceapi.loadMtcnnModel("./models");
+      await faceapi.loadFaceRecognitionModel("./models");
 
-  try {
-    await faceapi.loadMtcnnModel('./models');
-    // await faceapi.loadFaceRecognitionModel('../../weights/face_recognition_model-weights_manifest.json');
-  } catch(err) {
-    console.log(`Trouble loading models. ${err}`)
-  }
-    
+      const mtcnnForwardParams = {
+        // limiting the search space to larger faces for webcam detection
+        minFaceSize: 200
+      };
 
-    // const mtcnnForwardParams = {
-    //   // limiting the search space to larger faces for webcam detection
-    //   minFaceSize: 200
-    // }
-    
-    // const mtcnnResults = await faceapi.mtcnn(videoDOM, mtcnnForwardParams)
-    
-    // faceapi.drawDetection(canvasDOM, mtcnnResults.map(res => res.faceDetection), { withScore: false })
-    // faceapi.drawLandmarks(canvasDOM, mtcnnResults.map(res => res.faceLandmarks), { lineWidth: 4, color: 'red' })    
-  }
+      const mtcnnResults = await faceapi.mtcnn(video, mtcnnForwardParams);
 
-  useEffect(()=>{
-    if(!video) {
-      requestCameraAccess();
-      detectFace();
+      faceapi.drawDetection(
+        canvas,
+        mtcnnResults.map(res => res.faceDetection),
+        { withScore: false }
+      );
+      faceapi.drawLandmarks(
+        canvas,
+        mtcnnResults.map(res => res.faceLandmarks),
+        { lineWidth: 4, color: "red" }
+      );
+    } catch (err) {
+      console.log(`Trouble loading models. ${err}`);
     }
-  })
+  };
+
+  const onPlay = () => {
+    console.log("hi");
+  };
+
+  useEffect(() => {
+    if (!video) {
+      const video = videoDOM;
+      const canvas = canvasDOM;
+      requestCameraAccess();
+      detectFace(video, canvas);
+    }
+  });
 
   return (
     <Fragment>
-      <video 
-        autoPlay={true} 
-        style={styles.video} 
-        ref={video => {videoDOM = video}}
-        />
-      <canvas 
-        ref={canvas => {canvasDOM = canvas}}
+      <video
+        autoPlay={true}
+        onPlay={onPlay()}
+        style={styles}
+        ref={video => {
+          videoDOM = video;
+        }}
+        muted
+      />
+      <canvas
+        ref={canvas => {
+          canvasDOM = canvas;
+        }}
+        style={styles}
       />
     </Fragment>
   );
