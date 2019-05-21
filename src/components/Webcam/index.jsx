@@ -1,20 +1,29 @@
 import React, { useState, useEffect, Fragment } from "react";
 import * as faceapi from "face-api.js";
 
-// import mtcnnModel from '../../weights/mtcnn_model-weights_manifest.json';
-// import faceModel from '../../weights/face_recognition_model-weights_manifest.json';
+import glen from "../../faces/glen.jpg";
 
 const WebCam = function() {
-  let styles = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "40%",
-    height: "40%"
+  let videoDimensions = {
+    height: "500px",
+    width: "667px"
   };
 
-  let videoDOM;
-  let canvasDOM;
+  let styles = {
+    video: {
+      height: videoDimensions.height,
+      width: videoDimensions.width
+    },
+    canvas: {
+      position: "absolute",
+      top: 0,
+      left: 0
+    }
+  };
+
+  let videoEL;
+  let canvasEL;
+  let imageEL;
 
   const [video, setVideo] = useState(false);
 
@@ -23,7 +32,7 @@ const WebCam = function() {
       navigator.mediaDevices
         .getUserMedia({ video: {} })
         .then(function(stream) {
-          videoDOM.srcObject = stream;
+          videoEL.srcObject = stream;
           setVideo(true);
         })
         .catch(function(error) {
@@ -33,64 +42,91 @@ const WebCam = function() {
     }
   };
 
-  const detectFace = async (video, canvas) => {
-    try {
-      await faceapi.loadMtcnnModel("./models");
-      await faceapi.loadFaceRecognitionModel("./models");
+  const loadModels = async () => {
+    await faceapi.nets.ssdMobilenetv1.loadFromUri("./models");
+    await faceapi.nets.faceLandmark68Net.loadFromUri("./models");
+    await faceapi.nets.faceRecognitionNet.loadFromUri("./models");
 
-      const mtcnnForwardParams = {
-        // limiting the search space to larger faces for webcam detection
-        minFaceSize: 200
-      };
-
-      const mtcnnResults = await faceapi.mtcnn(video, mtcnnForwardParams);
-
-      faceapi.drawDetection(
-        canvas,
-        mtcnnResults.map(res => res.faceDetection),
-        { withScore: false }
-      );
-      faceapi.drawLandmarks(
-        canvas,
-        mtcnnResults.map(res => res.faceLandmarks),
-        { lineWidth: 4, color: "red" }
-      );
-    } catch (err) {
-      console.log(`Trouble loading models. ${err}`);
-    }
+    console.log("models loaded");
   };
 
-  const onPlay = () => {
-    console.log("hi");
+  const onPlay = async () => {
+    const displaySize = {
+      width: videoDimensions.width.replace("px", ""),
+      height: videoDimensions.height.replace("px", "")
+    };
+
+    // resize the overlay canvas to the input dimensions
+    faceapi.matchDimensions(canvasEL, displaySize);
+
+    const detections = await faceapi
+      .detectAllFaces(videoEL)
+      .withFaceLandmarks()
+      .withFaceDescriptors();
+
+    // resize the detected boxes and landmarks in case your displayed image has a different size than the original
+    const resizedResults = faceapi.resizeResults(detections, displaySize);
+
+    // draw detections into the canvas
+    faceapi.draw.drawDetections(canvasEL, resizedResults);
+    faceapi.draw.drawFaceLandmarks(canvasEL, resizedResults);
+
+    if (!detections.length) {
+      console.log('non2!')
+      setTimeout(() => onPlay());
+      return
+    }
+
+    // create FaceMatcher with automatically assigned labels
+    // from the detection results for the reference image
+    const faceMatcher = new faceapi.FaceMatcher(detections);
+
+    const results = await faceapi
+      .detectAllFaces(imageEL)
+      .withFaceLandmarks()
+      .withFaceDescriptors()
+
+    results.forEach(fd => {
+      const bestMatch = faceMatcher.findBestMatch(fd.descriptor)
+      console.log(bestMatch.toString())
+    })
+
+    setTimeout(() => onPlay());
   };
 
   useEffect(() => {
     if (!video) {
-      const video = videoDOM;
-      const canvas = canvasDOM;
       requestCameraAccess();
-      detectFace(video, canvas);
+      loadModels().catch(res => console.log(res));
     }
   });
 
   return (
-    <Fragment>
+    <div style={styles.container}>
       <video
         autoPlay={true}
-        onPlay={onPlay()}
-        style={styles}
+        onLoadedMetadata={onPlay}
         ref={video => {
-          videoDOM = video;
+          videoEL = video;
         }}
+        style={styles.video}
         muted
       />
       <canvas
         ref={canvas => {
-          canvasDOM = canvas;
+          canvasEL = canvas;
         }}
-        style={styles}
+        style={styles.canvas}
       />
-    </Fragment>
+      <img
+        ref={image => {
+          imageEL = image;
+        }}
+        src={glen}
+        alt="me"
+        width="100%"
+      />
+    </div>
   );
 };
 
