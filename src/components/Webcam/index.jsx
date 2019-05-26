@@ -1,8 +1,6 @@
 import React, { useState, useEffect, Fragment } from "react";
 import * as faceapi from "face-api.js";
 
-import glen from "../../faces/glen.jpg";
-
 const WebCam = function() {
   let videoDimensions = {
     height: "500px",
@@ -23,8 +21,7 @@ const WebCam = function() {
 
   let videoEL;
   let canvasEL;
-  let imageEL;
-
+ 
   const [video, setVideo] = useState(false);
 
   const requestCameraAccess = () => {
@@ -69,44 +66,45 @@ const WebCam = function() {
     // resize the detected boxes and landmarks in case your displayed image has a different size than the original
     const resizedResults = faceapi.resizeResults(detections, displaySize);
 
-    // draw detections into the canvas
-    faceapi.draw.drawDetections(canvasEL, resizedResults);
-    faceapi.draw.drawFaceLandmarks(canvasEL, resizedResults);
-
     if (!detections.length) {
       console.log('none!')
       setTimeout(() => onPlay());
       return
     }
 
-    // create FaceMatcher with automatically assigned labels
-    // from the detection results for the reference image
-    // should only be done once
-    const faceMatcher = new faceapi.FaceMatcher(detections);
+    const labels = ['glen','brenda']
 
-    const results = await faceapi
-      .detectAllFaces(imageEL)
-      .withFaceLandmarks()
-      .withFaceDescriptors();
+    const labeledFaceDescriptors = await Promise.all(
+      labels.map(async label => {
+        // fetch image data from urls and convert blob to HTMLImage element
+        const imgUrl = `images/${label}.jpg`
+        const img = await faceapi.fetchImage(imgUrl)
+        
+        // detect the face with the highest score in the image and compute it's landmarks and face descriptor
+        const fullFaceDescription = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
+        
+        if (!fullFaceDescription) {
+          throw new Error(`no faces detected for ${label}`)
+        }
+        
+        const faceDescriptors = [fullFaceDescription.descriptor]
+        return new faceapi.LabeledFaceDescriptors(label, faceDescriptors)
+      })
+    )
 
-    console.log(results)
+    // 0.6 is a good distance threshold value to judge
+    // whether the descriptors match or not
+    const maxDescriptorDistance = 0.6
+    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, maxDescriptorDistance)
 
-    let text = [];
+    const results = detections.map(fd => faceMatcher.findBestMatch(fd.descriptor));
 
-    results.forEach(fd => {
-      const bestMatch = faceMatcher.findBestMatch(fd.descriptor)
-      console.log(bestMatch.toString())
-      text = [bestMatch.toString()]
+    results.forEach((bestMatch, i) => {
+      const box = detections[i].detection.box;
+      const text = bestMatch.toString();
+      const drawBox = new faceapi.draw.DrawBox(box, { label: text });
+      drawBox.draw(canvasEL);
     })
-
-    const anchor = { x: resizedResults[0].alignedRect.box.x, y: resizedResults[0].alignedRect.box.y }
-    // see DrawTextField below
-    const drawOptions = {
-      anchorPosition: 'TOP_LEFT',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)'
-    }
-    const drawBox = new faceapi.draw.DrawTextField(text, anchor, drawOptions)
-    drawBox.draw(canvasEL)
 
     setTimeout(() => onPlay());
   };
@@ -134,14 +132,6 @@ const WebCam = function() {
           canvasEL = canvas;
         }}
         style={styles.canvas}
-      />
-      <img
-        ref={image => {
-          imageEL = image;
-        }}
-        src={glen}
-        alt="me"
-        width="100%"
       />
     </div>
   );
