@@ -57,12 +57,14 @@ const WebCam = function() {
     };
 
     // resize the overlay canvas to the input dimensions
+    // should only be done once
     faceapi.matchDimensions(canvasEL, displaySize);
 
     const detections = await faceapi
-      .detectAllFaces(videoEL)
-      .withFaceLandmarks()
-      .withFaceDescriptors();
+      .detectAllFaces(videoEL) //detect face from video element
+      .withFaceLandmarks()  //detect face landmark ... might not need to use this
+      .withFaceDescriptors(); //this will return an array of numbers that describes your face
+
 
     // resize the detected boxes and landmarks in case your displayed image has a different size than the original
     const resizedResults = faceapi.resizeResults(detections, displaySize);
@@ -72,24 +74,39 @@ const WebCam = function() {
     faceapi.draw.drawFaceLandmarks(canvasEL, resizedResults);
 
     if (!detections.length) {
-      console.log('non2!')
+      console.log('none!')
       setTimeout(() => onPlay());
       return
     }
 
     // create FaceMatcher with automatically assigned labels
     // from the detection results for the reference image
+    // should only be done once
     const faceMatcher = new faceapi.FaceMatcher(detections);
 
     const results = await faceapi
       .detectAllFaces(imageEL)
       .withFaceLandmarks()
-      .withFaceDescriptors()
+      .withFaceDescriptors();
+
+    console.log(results)
+
+    let text = [];
 
     results.forEach(fd => {
       const bestMatch = faceMatcher.findBestMatch(fd.descriptor)
       console.log(bestMatch.toString())
+      text = [bestMatch.toString()]
     })
+
+    const anchor = { x: resizedResults[0].alignedRect.box.x, y: resizedResults[0].alignedRect.box.y }
+    // see DrawTextField below
+    const drawOptions = {
+      anchorPosition: 'TOP_LEFT',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)'
+    }
+    const drawBox = new faceapi.draw.DrawTextField(text, anchor, drawOptions)
+    drawBox.draw(canvasEL)
 
     setTimeout(() => onPlay());
   };
