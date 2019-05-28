@@ -24,6 +24,8 @@ const WebCam = function() {
  
   const [video, setVideo] = useState(false);
 
+  const [faceOnCamera, ChangeFaceOnCamera] = useState('no one');
+
   const requestCameraAccess = () => {
     if (navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
@@ -78,7 +80,7 @@ const WebCam = function() {
       labels.map(async label => {
         // fetch image data from urls and convert blob to HTMLImage element
         const imgUrl = `images/${label}.jpg`
-        const img = await faceapi.fetchImage(imgUrl)
+        const img = await faceapi.fetchImage(imgUrl);
         
         // detect the face with the highest score in the image and compute it's landmarks and face descriptor
         const fullFaceDescription = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
@@ -97,14 +99,19 @@ const WebCam = function() {
     const maxDescriptorDistance = 0.6
     const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, maxDescriptorDistance)
 
-    const results = detections.map(fd => faceMatcher.findBestMatch(fd.descriptor));
+    const results = resizedResults.map(fd => faceMatcher.findBestMatch(fd.descriptor));
 
-    results.forEach((bestMatch, i) => {
-      const box = detections[i].detection.box;
-      const text = bestMatch.toString();
-      const drawBox = new faceapi.draw.DrawBox(box, { label: text });
-      drawBox.draw(canvasEL);
-    })
+    const box = resizedResults[0].detection.box;
+
+    if(results) {
+      results.forEach((bestMatch, i) => {
+        const text = bestMatch.toString();
+        const drawBox = new faceapi.draw.DrawBox(box, { label: text });
+  
+        // ChangeFaceOnCamera(text)
+        drawBox.draw(canvasEL);
+      });
+    }
 
     setTimeout(() => onPlay());
   };
@@ -114,7 +121,7 @@ const WebCam = function() {
       requestCameraAccess();
       loadModels().catch(res => console.log(res));
     }
-  });
+  }, []);
 
   return (
     <div style={styles.container}>
@@ -133,6 +140,7 @@ const WebCam = function() {
         }}
         style={styles.canvas}
       />
+      <h1>{faceOnCamera}</h1>
     </div>
   );
 };
