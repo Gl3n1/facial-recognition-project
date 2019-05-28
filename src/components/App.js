@@ -4,7 +4,11 @@ import './App.scss';
 import Webcam from './Webcam';
 import Navbar from './Navbar/index';
 import SideNavbar from './SideNavbar';
-import Card from './Card';
+import BioCard from './Cards/BioCard';
+import LastVisitCard from './Cards/LastVisitCard';
+import NewsCard from './Cards/NewsCard';
+import SocialCard from './Cards/SocialCard';
+import ProfessionalCard from './Cards/ProfessionalCard';
 
 function App() {
   const style = {
@@ -18,8 +22,16 @@ function App() {
       <Navbar />
       <section style={style}>
         <SideNavbar />
-        <div>
-          <Card />
+        <div className="content">
+          <div className='row'>
+            <BioCard />
+            <LastVisitCard />
+          </div>
+          <div className='row'>
+            <NewsCard />
+            <SocialCard />
+            <ProfessionalCard />
+          </div>
           {/* <Webcam /> */}
         </div>
       </section>

@@ -1,7 +1,7 @@
 import React from 'react';
-import icon from '../../images/icon.png'
+import icon from '../../../images/icon.png'
 
-const Card = () => {
+const BioCard = () => {
     return (
         <div className='card'>
             <h1>Walk in Personal Bio</h1>
@@ -31,4 +31,4 @@ const Card = () => {
     )
 }
 
-export default Card;
+export default BioCard;
