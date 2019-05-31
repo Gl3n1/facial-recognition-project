@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.scss';
 
-import Webcam from './Webcam';
+// import Webcam from './Webcam';
 import Navbar from './Navbar/index';
 import SideNavbar from './SideNavbar';
 import BioCard from './Cards/BioCard';
