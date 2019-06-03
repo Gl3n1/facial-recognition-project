@@ -1,9 +1,10 @@
 import React from 'react';
 import './App.scss';
+import 'semantic-ui-css/semantic.min.css';
 
 // import Webcam from './Webcam';
 import Navbar from './Navbar/index';
-import SideNavbar from './SideNavbar';
+// import SideNavbar from './SideNavbar';
 import BioCard from './Cards/BioCard';
 import LastVisitCard from './Cards/LastVisitCard';
 import NewsCard from './Cards/NewsCard';
@@ -21,7 +22,7 @@ function App() {
     <div className="App">
       <Navbar />
       <section style={style}>
-        <SideNavbar />
+        {/* <SideNavbar /> */}
         <div className="content">
           <div className='row'>
             <BioCard />

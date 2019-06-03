@@ -10,21 +10,20 @@ const BioCard = () => {
                 <div>
                     <div className='row'>
                         <p>Name:</p>
-                        <p>Name:</p>
+                        <p>Gleen lexry alexander wan</p>
                     </div>
                     <div className='row'>
                         <p>Last visit:</p>
-                        <p>Name:</p>
+                        <p>19/04/19</p>
                     </div>
                     <div className='row'>
                         <p>Products:</p>
-                        <p>Name:</p>
+                        <p>Debit account</p>
                     </div>
                     <div className='row'>
                         <p>Remarks:</p>
-                        <p>Name:</p>
+                        <p>VIP</p>
                     </div>
-                    
                 </div>
             </div>
         </div>

@@ -11,19 +11,19 @@ const LastVisitCard = () => {
                     </div>
                     <div className='row'>
                         <p>Last visit:</p>
-                        <p>Name:</p>
+                        <p>19/04/19</p>
                     </div>
                     <div className='row'>
                         <p>Branch:</p>
-                        <p>Name:</p>
+                        <p>PJ</p>
                     </div>
                     <div className='row'>
                         <p>Served by:</p>
-                        <p>Name:</p>
+                        <p>Lee ko wang</p>
                     </div>
                     <div className='row'>
                         <p>Remarks:</p>
-                        <p>Name:</p>
+                        <p>none</p>
                     </div>
                 </div>
                 <div className='contentpart'>
@@ -32,7 +32,7 @@ const LastVisitCard = () => {
                     </div>
                     <div className='row'>
                         <p>Activity time:</p>
-                        <p>Name:</p>
+                        <p>11:30</p>
                     </div>
                     <div className='row'>
                         <p>Channel:</p>
