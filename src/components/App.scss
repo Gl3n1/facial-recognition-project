@@ -28,6 +28,10 @@
   }
 }
 
+.img-face {
+  border-radius: 100%;
+}
+
 .row {
   display: flex;
   flex-direction: row;
@@ -67,7 +71,8 @@
     flex-wrap: wrap;
 
     img {
-      margin-right: 20px;
+      margin: 20px;
+      margin-left: 0;
     }
 
     .row {
@@ -89,8 +94,31 @@
       border-left: 2px black solid;
       margin-left: 30px;
       padding-left: 30px;
+    }
   }
-  }
+}
+
+.cse .gsc-control-cse, .gsc-control-cse {
+  padding: 0 !important;
+}
+
+.googleSearchBar {
+  width: 100%;
+}
+
+.basic-profile-container .cover-image {
+  position: relative;
+  width: 100%;
+  padding-bottom: 25%;
+  background-color: #f3f6f8;
+  background-position: center;
+  background-size: cover;
+}
+
+.linkedInProfile {
+  width: 100%;
+  object-fit: contain;
+  height: 100%;
 }
 
 @media only screen and (max-width: 768px) {

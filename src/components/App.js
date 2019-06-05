@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './App.scss';
 import 'semantic-ui-css/semantic.min.css';
 
@@ -18,6 +18,8 @@ function App() {
     height: '100%'
   };
 
+  const [name,changeName] = useState('Jeff Weiner')
+
   return (
     <div className="App">
       <Navbar />
@@ -29,7 +31,7 @@ function App() {
             <LastVisitCard />
           </div>
           <div className='row'>
-            <NewsCard />
+            <NewsCard name={name} />
             <SocialCard />
             <ProfessionalCard />
           </div>
